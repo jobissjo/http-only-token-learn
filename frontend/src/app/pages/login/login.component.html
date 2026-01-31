@@ -5,9 +5,11 @@
       <p>Enter your credentials to access the dashboard.</p>
     </div>
     
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+    @if (errorMessage()) {
+      <div class="error-message">
+        {{ errorMessage() }}
+      </div>
+    }
 
     <form (ngSubmit)="onLogin()">
       <div class="form-group">
@@ -33,9 +35,12 @@
           required>
       </div>
 
-      <button type="submit" [disabled]="isLoading" class="login-btn">
-        <span *ngIf="!isLoading">Sign In</span>
-        <span *ngIf="isLoading" class="spinner"></span>
+      <button type="submit" [disabled]="isLoading()" class="login-btn">
+        @if (!isLoading()) {
+          <span>Sign In</span>
+        } @else {
+          <span class="spinner"></span>
+        }
       </button>
     </form>
   </div>

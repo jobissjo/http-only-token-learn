@@ -1,16 +1,18 @@
 <div class="dashboard-container">
     <nav class="navbar">
-        <div class="logo">AppLogo</div>
+        <div routerLink="/home" style="cursor: pointer;" class="logo">AppLogo</div>
         <button (click)="onLogout()" class="logout-btn">Logout</button>
     </nav>
 
     <main class="content">
-        <div *ngIf="loading" class="loading-state">
+        @if (loading()) {
+        <div class="loading-state">
             <div class="spinner"></div>
             <p>Loading protected data...</p>
         </div>
-
-        <div *ngIf="!loading && data" class="data-card">
+        }
+        @if (!loading() && data()) {
+        <div class="data-card">
             <div class="card-header">
                 <h2>Dashboard</h2>
                 <span class="badge">Protected</span>
@@ -18,9 +20,13 @@
             <div class="card-body">
                 <p class="welcome-text">You have successfully accessed the protected area.</p>
                 <div class="json-viewer">
-                    <pre>{{ data | json }}</pre>
+                    <pre>{{ data() | json }}</pre>
                 </div>
             </div>
         </div>
+        }
+
+
+
     </main>
 </div>

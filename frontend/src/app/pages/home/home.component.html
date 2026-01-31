@@ -1,0 +1,19 @@
+<div class="home-container">
+    <nav class="navbar">
+        <div routerLink="/home" style="cursor: pointer;" class="logo">AppLogo</div>
+        <div class="actions">
+            <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+            <button (click)="onLogout()" class="logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <main class="content">
+        <div class="hero">
+            <h1>Welcome to the App</h1>
+            <p class="lead">A minimal home page to get you started.</p>
+            <div class="cta">
+                <a routerLink="/dashboard" class="btn">Go to Dashboard</a>
+            </div>
+        </div>
+    </main>
+</div>

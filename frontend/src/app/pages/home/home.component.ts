@@ -1,42 +1,18 @@
-import {  Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Auth } from '../../service/auth';
 
 @Component({
-    selector: 'app-dashboard',
+    selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterLink
-
-    ],
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.css']
+    imports: [CommonModule, RouterLink],
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.css']
 })
-export class DashboardComponent implements OnInit {
-    data = signal<any>(null);
-    loading = signal(false);
-    error = '';
-
-    private readonly auth = inject(Auth);
+export class HomeComponent {
     private readonly router = inject(Router);
-
-
-    ngOnInit() {
-        this.auth.getProtected().subscribe({
-            next: (response) => {
-
-                this.data.set(response);
-                this.loading.set(false);
-
-            },
-            error: (err) => {
-                this.loading.set(false);
-                
-                console.error('Dashboard access error', err);
-
-            }
-        });
-    }
+    private readonly auth = inject(Auth);
 
     onLogout() {
         this.auth.logout().subscribe({
@@ -51,7 +27,6 @@ export class DashboardComponent implements OnInit {
                 if (typeof window !== 'undefined' && window.localStorage) {
                     localStorage.removeItem('isAuthenticated');
                 }
-                // Even if logout fails server-side, redirect to login
                 this.router.navigate(['/login']);
             }
         });

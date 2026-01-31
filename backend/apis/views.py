@@ -12,10 +12,10 @@ from django.contrib.auth.models import User
 
 # Create your views here.
 
+
 class BaseAPIView(APIView):
     def get(self, request):
         return Response({"message": "Hello, World!"})
-
 
 
 class LoginView(APIView):
@@ -37,15 +37,18 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        response = Response({"detail": "Login successful", 'data': {'is_admin': user.is_staff}}, status=status.HTTP_200_OK)
+        response = Response(
+            {"detail": "Login successful", "data": {"is_admin": user.is_staff}},
+            status=status.HTTP_200_OK,
+        )
 
         # access token
         response.set_cookie(
             key="access_token",
             value=str(refresh.access_token),
             httponly=True,
-            secure=False,      # True in HTTPS
-            samesite="Lax",
+            secure=False,  # True in HTTPS
+            samesite="Strict",
             max_age=15 * 60,
             path="/",
         )
@@ -56,13 +59,12 @@ class LoginView(APIView):
             value=str(refresh),
             httponly=True,
             secure=False,
-            samesite="Lax",
+            samesite="Strict",
             max_age=7 * 24 * 60 * 60,
             path="/",
         )
 
         return response
-
 
 
 class RefreshView(APIView):
@@ -95,7 +97,6 @@ class RefreshView(APIView):
         except AttributeError:
             pass
 
-
         # create NEW refresh token
         new_refresh = RefreshToken.for_user(user)
         new_access = new_refresh.access_token
@@ -125,9 +126,9 @@ class RefreshView(APIView):
         return response
 
 
-
 class ProtectedAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         return Response({"message": "This is a protected endpoint!"})
 
@@ -135,8 +136,26 @@ class ProtectedAPIView(APIView):
 class LogoutView(APIView):
     permission_classes = []
     authentication_classes = []
+
     def post(self, request):
         response = Response({"detail": "Logged out"})
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
         return response
+
+
+class MeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response(
+            {
+                "data": {
+                    "username": user.username,
+                    "email": user.email,
+                    "is_staff": user.is_staff,
+                },
+                "message": "User info retrieved successfully",
+            }
+        )

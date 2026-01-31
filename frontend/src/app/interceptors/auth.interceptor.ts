@@ -5,56 +5,51 @@ import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from
 import { Auth } from '../service/auth';
 
 let isRefreshing = false;
-const refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+const refreshSubject = new BehaviorSubject<boolean | null>(null);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const router = inject(Router);
-    const authService = inject(Auth);
+  const router = inject(Router);
+  const authService = inject(Auth);
 
-    return next(req).pipe(
-        catchError((error: HttpErrorResponse) => {
-            // Check if we are running in the browser
-            if (typeof window !== 'undefined' && error.status === 401) {
+  // Always send cookies
+  const clonedReq = req.clone({ withCredentials: true });
 
-                // If the 401 comes from the refresh token endpoint itself, we can't refresh.
-                if (req.url.includes('/api/token/refresh/')) {
-                    if (window.localStorage) {
-                        localStorage.removeItem('isAuthenticated');
-                    }
-                    router.navigate(['/login']);
-                    return throwError(() => error);
-                }
+  return next(clonedReq).pipe(
+    catchError((error: HttpErrorResponse) => {
 
-                if (!isRefreshing) {
-                    isRefreshing = true;
-                    refreshTokenSubject.next(null);
+      if (error.status !== 401) {
+        return throwError(() => error);
+      }
 
-                    return authService.refreshToken().pipe(
-                        switchMap((response) => {
-                            isRefreshing = false;
-                            refreshTokenSubject.next(response || true);
-                            return next(req);
-                        }),
-                        catchError((err) => {
-                            isRefreshing = false;
-                            if (window.localStorage) {
-                                localStorage.removeItem('isAuthenticated');
-                            }
-                            router.navigate(['/login']);
-                            return throwError(() => err);
-                        })
-                    );
-                } else {
-                    return refreshTokenSubject.pipe(
-                        filter(token => token != null),
-                        take(1),
-                        switchMap(() => {
-                            return next(req);
-                        })
-                    );
-                }
-            }
-            return throwError(() => error);
-        })
-    );
+      // If refresh endpoint itself fails → logout
+      if (req.url.includes('/auth/refresh')) {
+        router.navigate(['/login']);
+        return throwError(() => error);
+      }
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshSubject.next(null);
+
+        return authService.refreshToken().pipe(
+          switchMap(() => {
+            isRefreshing = false;
+            refreshSubject.next(true);   // just signal success
+            return next(clonedReq);      // retry original request
+          }),
+          catchError(err => {
+            isRefreshing = false;
+            router.navigate(['/login']);
+            return throwError(() => err);
+          })
+        );
+      } else {
+        return refreshSubject.pipe(
+          filter(v => v === true),
+          take(1),
+          switchMap(() => next(clonedReq))
+        );
+      }
+    })
+  );
 };
