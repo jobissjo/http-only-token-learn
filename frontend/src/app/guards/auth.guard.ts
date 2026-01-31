@@ -10,7 +10,6 @@ export const authGuard: CanActivateFn = () => {
   return authService.checkAuth().pipe(
     
     map(user => {
-        console.log('Auth guard checking user', user);
       if (!user) {
         router.parseUrl('/login');
         return false;
