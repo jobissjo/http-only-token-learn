@@ -26,4 +26,3 @@ Frontend
 
 Notes
 - See `Docs1.MD` for more detailed notes.
-- This README is intentionally minimal; edit as needed.
