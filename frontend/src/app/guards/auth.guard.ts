@@ -6,13 +6,12 @@ import { map } from 'rxjs/operators';
 export const authGuard: CanActivateFn = () => {
   const authService = inject(Auth);
   const router = inject(Router);
-    console.log('Auth guard check');
   return authService.checkAuth().pipe(
     
     map(user => {
       if (!user) {
-        router.parseUrl('/login');
-        return false;
+        return router.parseUrl('/login');
+
       }
       return true;
     })
