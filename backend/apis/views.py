@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apis.serializers import LoginSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.models import User
+from django.conf import settings
 
 
 # Create your views here.
@@ -47,7 +48,7 @@ class LoginView(APIView):
             key="access_token",
             value=str(refresh.access_token),
             httponly=True,
-            secure=False,  # True in HTTPS
+            secure=settings.DEBUG,  # True in HTTPS
             samesite="Lax",
             max_age=15 * 60,
             path="/",
@@ -58,7 +59,7 @@ class LoginView(APIView):
             key="refresh_token",
             value=str(refresh),
             httponly=True,
-            secure=False,
+            secure=settings.DEBUG,
             samesite="Lax",
             max_age=7 * 24 * 60 * 60,
             path="/",

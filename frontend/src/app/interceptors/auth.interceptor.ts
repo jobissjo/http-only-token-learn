@@ -11,7 +11,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(Auth);
 
-  // Always send cookies
   const clonedReq = req.clone({ withCredentials: true });
 
   return next(clonedReq).pipe(
@@ -34,8 +33,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return authService.refreshToken().pipe(
           switchMap(() => {
             isRefreshing = false;
-            refreshSubject.next(true);   // just signal success
-            return next(clonedReq);      // retry original request
+            refreshSubject.next(true);
+            return next(clonedReq);
           }),
           catchError(err => {
             isRefreshing = false;
